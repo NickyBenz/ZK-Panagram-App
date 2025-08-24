@@ -1,66 +1,24 @@
-## Foundry
+# ZK Panagram 
 
-**Foundry is a blazing fast, portable and modular toolkit for Ethereum application development written in Rust.**
 
-Foundry consists of:
+## Rules 
+- Each 'answer' is a round
+- Owner is only person that can start a new round 
+- Each round has a minimum duration
+- There needs to be a "winner" of a previous round to start a new round 
 
--   **Forge**: Ethereum testing framework (like Truffle, Hardhat and DappTools).
--   **Cast**: Swiss army knife for interacting with EVM smart contracts, sending transactions and getting chain data.
--   **Anvil**: Local Ethereum node, akin to Ganache, Hardhat Network.
--   **Chisel**: Fast, utilitarian, and verbose solidity REPL.
+## Smart Contract (ERC1155): 
+### Architecture: 
 
-## Documentation
+- Token ID 0 is minted to winners, Token ID 1 is minted to runners up 
+- Mint ID 0 if the user is first to get a correct guess 
+- Mint ID 1 for all runners up 
 
-https://book.getfoundry.sh/
+### Methods: 
 
-## Usage
+- startRound():  Method that allows the owner to start a round  (External)
+- guess(): Method that allows the user to send an initial guess (External)
+- _verify(): Calls the verifier smart contract to determine if the guess is correct or not (Internal)
+- _mint(): Method that mints the user an NFT (Internal)
+-endRound(): Owner can terminate the round after a specified duration has passed (External)
 
-### Build
-
-```shell
-$ forge build
-```
-
-### Test
-
-```shell
-$ forge test
-```
-
-### Format
-
-```shell
-$ forge fmt
-```
-
-### Gas Snapshots
-
-```shell
-$ forge snapshot
-```
-
-### Anvil
-
-```shell
-$ anvil
-```
-
-### Deploy
-
-```shell
-$ forge script script/Counter.s.sol:CounterScript --rpc-url <your_rpc_url> --private-key <your_private_key>
-```
-
-### Cast
-
-```shell
-$ cast <subcommand>
-```
-
-### Help
-
-```shell
-$ forge --help
-$ anvil --help
-$ cast --help
-```
