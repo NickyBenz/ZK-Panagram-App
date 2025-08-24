@@ -12,8 +12,8 @@ contract Panagram is ERC1155, Ownable {
     event NewRoundStarted(bytes32 answer);
     event RoundWon(address winner, uint256 roundNo);
     event RunnerUp(address runnerup, uint256 roundNo);
-    uint256 constant WINNER_ID = 0;
-    uint256 constant RUNNER_UP_ID = 1; 
+    uint256 public constant WINNER_ID = 0;
+    uint256 public  constant RUNNER_UP_ID = 1; 
     uint256 constant MIN_DURATION=10800; //3 hours 
 
 
@@ -25,13 +25,11 @@ contract Panagram is ERC1155, Ownable {
     error NoWinnerYet();
     error IncorrectProof();
     IVerifier s_verifier;
-    address immutable i_owner;
 
     uint256 public s_currentRoundNo;
     
     struct Round{
         uint256 start_time;
-        uint256 duration;
         uint256 n_winners;
         bytes32 answer;
     }
@@ -40,27 +38,25 @@ contract Panagram is ERC1155, Ownable {
 
     mapping (uint256=> mapping(address => bool)) public s_hasPlayed; 
 
-    constructor(IVerifier _verifier, address owner) Ownable(owner) ERC1155("ipfs://QmaWbJ5TE5x8VBmsAByxBJcjjsARY8dvEwwir8hnDqLd48/{id}.json"){
+    constructor(IVerifier _verifier) Ownable(msg.sender) ERC1155("ipfs://QmaWbJ5TE5x8VBmsAByxBJcjjsARY8dvEwwir8hnDqLd48/{id}.json"){
         s_verifier = _verifier;
-        i_owner = owner;
     }
 
 
     //Method to start a new round 
 
-    function startRound(uint256 duration, bytes32 _answer) external onlyOwner{
-      uint256 timePassed = block.timestamp -s_current_round.start_time;
+    function startRound(bytes32 _answer) external onlyOwner{
+      uint256 timePassed = block.timestamp - s_current_round.start_time;
       //Check if the minimum Duration has passed 
-      if(!_roundTimePassed()){
+      if(!_roundTimePassed() && s_currentRoundNo !=0){
         revert RoundNotEnded(MIN_DURATION, timePassed);
       }
       //Check if there has been a winner yet
-      if (s_current_round.n_winners == 0){
+      if (s_current_round.n_winners == 0 && s_currentRoundNo !=0){
         revert NoWinnerYet();
       }
 
        //Reset the round 
-       s_current_round.duration = duration;
        s_current_round.n_winners = 0;
        s_current_round.answer = _answer;
        s_current_round.start_time = block.timestamp;
@@ -91,9 +87,10 @@ contract Panagram is ERC1155, Ownable {
         if (!isCorrectProof){
             revert IncorrectProof();
         }
+        _mintWinner(msg.sender);
         s_hasPlayed[s_currentRoundNo][msg.sender] = true;
      //if correct, check if they are first and mint the NFT 
-
+        return isCorrectProof;
 
     }
 
@@ -120,7 +117,7 @@ contract Panagram is ERC1155, Ownable {
 
     function _roundTimePassed() internal view returns(bool){
         uint256 time_passed = block.timestamp - s_current_round.start_time;
-        return time_passed > MIN_DURATION;
+        return time_passed >= MIN_DURATION;
    
     }
 
